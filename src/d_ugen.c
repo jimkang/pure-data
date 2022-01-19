@@ -54,7 +54,7 @@ void d_ugen_newpdinstance(void)
     THIS->u_dspchain = 0;
     THIS->u_dspchainsize = 0;
     THIS->u_signals = 0;
-}l
+}
 
 void d_ugen_freepdinstance(void)
 {
