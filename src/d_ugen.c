@@ -22,7 +22,7 @@ EXTERN_STRUCT _vinlet;
 EXTERN_STRUCT _voutlet;
 
 void vinlet_dspprolog(struct _vinlet *x, t_signal **parentsigs,
-    int myvecsize, int calcsize, int phase, int period, int frequency,
+    int myvecsize, int calcsize, int phase, int period, int frequency,l
     int downsample, int upsample,  int reblock, int switched);
 void voutlet_dspprolog(struct _voutlet *x, t_signal **parentsigs,
     int myvecsize, int calcsize, int phase, int period, int frequency,
@@ -54,13 +54,18 @@ void d_ugen_newpdinstance(void)
     THIS->u_dspchain = 0;
     THIS->u_dspchainsize = 0;
     THIS->u_signals = 0;
-}
+}l
 
 void d_ugen_freepdinstance(void)
 {
     freebytes(THIS, sizeof(*THIS));
 }
 
+// The elements of w:
+// 0: ?
+// 1: The pointer to the array of samples.
+// 2: The size of the array.
+// 3: The next empty space after w?
 t_int *zero_perform(t_int *w)   /* zero out a vector */
 {
     t_sample *out = (t_sample *)(w[1]);
@@ -69,6 +74,9 @@ t_int *zero_perform(t_int *w)   /* zero out a vector */
     return (w+3);
 }
 
+// This seems to be the some as zero_perform,
+// except that it zeroes out 8 samples at a time
+// and assumes the array size is a multiple of 8.
 t_int *zero_perf8(t_int *w)
 {
     t_sample *out = (t_sample *)(w[1]);
@@ -88,6 +96,8 @@ t_int *zero_perf8(t_int *w)
     return (w+3);
 }
 
+// This is the thing that finds out if the array size is a
+// multiple of 8 and then uses the optimized zero_perf8 if it is.
 void dsp_add_zero(t_sample *out, int n)
 {
     if (n&7)
@@ -136,7 +146,7 @@ typedef struct _block
     int x_overlap;
     int x_phase;        /* from 0 to period-1; when zero we run the block */
     int x_period;       /* submultiple of containing canvas */
-    int x_frequency;    /* supermultiple of comtaining canvas */
+    int x_frequency;    /* supermultiple of containing canvas */
     int x_count;        /* number of times parent block has called us */
     int x_chainonset;   /* beginning of code in DSP chain */
     int x_blocklength;  /* length of dspchain for this block */
@@ -241,6 +251,8 @@ static void block_float(t_block *x, t_floatarg f)
         x->x_switchon = (f != 0);
 }
 
+// This runs everything in the DSP chain, but where do the prologs and epilogs come in?
+// Seems like ugen_done_graph adds them.
 static void block_bang(t_block *x)
 {
     if (x->x_switched && !x->x_switchon && THIS->u_dspchain)
