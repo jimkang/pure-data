@@ -975,10 +975,14 @@ void ugen_done_graph(t_dspcontext *dc)
         calcsize = blk->x_calcsize;
         if (calcsize == 0)
             calcsize = vecsize;
+        // calcsize is the number of samples that should go into the output.
         realoverlap = blk->x_overlap;
         if (realoverlap > vecsize) realoverlap = vecsize;
+        // realoverlap can't be greater than the number of signals in the block.
         downsample = blk->x_downsample;
         upsample   = blk->x_upsample;
+        // downsample > 1 sends fewer samples to the output than the samples that came in from the input.
+        // upsample > 1 sends more samples to the output.
         if (downsample > parent_vecsize)
             downsample = parent_vecsize;
         period = (vecsize * downsample)/
