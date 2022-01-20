@@ -987,15 +987,26 @@ void ugen_done_graph(t_dspcontext *dc)
             downsample = parent_vecsize;
         period = (vecsize * downsample)/
             (parent_vecsize * realoverlap * upsample);
+        // period is how many parent blocks are covered in one of this unit's blocks.
+        // e.g. 2 means that we play our samples twice for every one time our parent plays
+        // its samples.
         frequency = (parent_vecsize * realoverlap * upsample)/
             (vecsize * downsample);
+        // frequency is the inverse of period. It's how many parent blocks run by
+        // each time one of our blocks runs. So, a frequency of 2 would mean that every
+        // time we got halfway through our block, one whole parent block would run.
         phase = blk->x_phase;
         srate = parent_srate * realoverlap * upsample / downsample;
+        // Our sample rate corresponds to the overlap. So, if the overlap is 2, our
+        // sample rate is double the parent sample rate (assuming up/downsample are both 1).
+        // TODO: But why?
         if (period < 1) period = 1;
         if (frequency < 1) frequency = 1;
         blk->x_frequency = frequency;
         blk->x_period = period;
         blk->x_phase = THIS->u_phase & (period - 1);
+        // I think x_phase is where we're at in the samples currently.
+        // If overlap is not 1, that means we are reblocking.
         if (! parent_context || (realoverlap != 1) ||
             (vecsize != parent_vecsize) ||
                 (downsample != 1) || (upsample != 1))
